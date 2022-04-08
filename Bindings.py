@@ -12,7 +12,7 @@ class Binds:
         self.m_mclick    = 2,
         self.m_wheelup   = 1,
         self.m_wheeldown = -1
-        
+binds = Binds()
         
         
         
