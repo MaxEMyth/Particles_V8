@@ -14,9 +14,7 @@ from pygame.math import Vector2 as Vec
 
 
 import Colors
-from Camera import cam
-from Bindings import binds
-from Setup import settings
+from Game import game
 #todo use Vec.project() and reflect() for collisions
 
 my_clock = t.Clock()
@@ -25,7 +23,7 @@ my_clock = t.Clock()
 screen = display.set_mode(settings.GAME_FIELD_SIZE, l.RESIZABLE)                
 
 while 1:
-    cam.assess_inputs()
+    game.cam.handle_all_events()
     display.flip()
     my_clock.tick_busy_loop(settings.FPS)
 

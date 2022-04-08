@@ -10,4 +10,3 @@ class Setup:
         self.GRAVITY         	= 0                   # units - > px/s**2
         self.TOTAL_MOMENTUM  	= 500
         self.paused 			= False # *This is the only non Read-Only attribute so far*
-settings = Setup()
