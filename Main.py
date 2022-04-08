@@ -1,6 +1,6 @@
 #import math
 #import random
-from sys import exit
+#from sys import exit
 #import time
 
 #import pygame as p  # TODO refactor imports ^_^
@@ -10,20 +10,19 @@ import pygame.font as f
 import pygame.time as t
 import pygame.locals as l
 #import pygame.event as e
-from pygame.math import Vector2 as Vec
+#from pygame.math import Vector2 as Vec
 
 
 import Colors
 from Game import game
-#todo use Vec.project() and reflect() for collisions
-
+#todo use dead time between frames to calculate next frame (unbind framerate from simulation accuracy)
 my_clock = t.Clock()
 
 
-screen = display.set_mode(settings.GAME_FIELD_SIZE, l.RESIZABLE)                
+screen = display.set_mode(game.settings.GAME_FIELD_SIZE, l.RESIZABLE)                
 
 while 1:
     game.cam.handle_all_events()
     display.flip()
-    my_clock.tick_busy_loop(settings.FPS)
+    my_clock.tick_busy_loop(game.settings.FPS)
 

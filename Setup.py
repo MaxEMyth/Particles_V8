@@ -9,4 +9,3 @@ class Setup:
         self.WALL_FACTOR     	= 1 #.987,                # 0 - 0.985
         self.GRAVITY         	= 0                   # units - > px/s**2
         self.TOTAL_MOMENTUM  	= 500
-        self.paused 			= False # *This is the only non Read-Only attribute so far*

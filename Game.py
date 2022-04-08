@@ -7,16 +7,17 @@ from Bindings import binds
 from Setup import Setup
 init()
 
-class Keystate:
+class Keyboard:
     def __init__(self) -> None:
         self.state = dict()
         for bind in binds.binds: self.state[bind] = False
 class Camera: pass
 class Game:
     def __init__(self) -> None:
-        self.keyboard = Keystate()
+        self.keyboard = Keyboard()
         self.cam = Camera()
         self.settings = Setup()
+        self.running = True
         
     def handle_all_events(self) -> None:
         for event in e.get():
@@ -24,8 +25,12 @@ class Game:
                 case l.QUIT: exit()
                 case l.MOUSEWHEEL:
                     match event.y: # value is 1 for wheelup, -1 for wheeldown
-                        case binds.m_wheelup:pass
-                        case binds.m_wheeldown:pass
+                        case binds.mouse.wheelup if game.running:pass
+                            # self.cam.pos += self.cam.size * 0.5 * (1-self.cam.zoom_factor)
+                            # self.cam.size *= self.cam.zoom_factor 
+                        case binds.mouse.wheeldown if game.running:pass
+                            # self.cam.pos += self.cam.size * 0.5 * (1-(self.cam.zoom_factor**-1))
+                            # self.cam.size /= self.cam.zoom_factor 
                 case l.KEYDOWN: 
                     self.keyboard.state[event.key] = True
                 case l.KEYUP:
@@ -34,18 +39,13 @@ class Game:
                     self.settings.GAME_FIELD_SIZE = Vec(event.w, event.h) 
                 case l.WINDOWRESIZED | l.WINDOWSIZECHANGED:
                     self.settings.GAME_FIELD_SIZE = Vec(event.x, event.y)
-                case l.MOUSEBUTTONUP:
-                    pass
-                case l.MOUSEBUTTONDOWN:
-                    pass
-                case l.MOUSEMOTION:
-                    pass
+                case l.MOUSEBUTTONDOWN: pass
+                case l.MOUSEBUTTONUP:   pass
+                case l.MOUSEMOTION:     pass
                 case l.WINDOWFOCUSLOST | l.WINDOWMINIMIZED:
-                    self.settings.paused = True
-                case l.WINDOWEXPOSED | l.WINDOWENTER | l.WINDOWLEAVE | l.WINDOWMOVED:
-                    pass
-                case l.TEXTINPUT:
-                    pass
+                    self.running = False
+                case l.WINDOWEXPOSED | l.WINDOWENTER | l.WINDOWLEAVE | l.WINDOWMOVED: pass
+                case l.TEXTINPUT:       pass
                 case _: print("Uncaught Event: ", e.event_name(event.type))
 
 
@@ -58,9 +58,9 @@ class Camera:
         
     def constrain(self) -> None:
         self.center = self.pos + self.size/2
-        if self.center.x    <= 0                             : self.pos.x = -0.5*self.size.x
-        elif self.center.x  >= game.settings.GAME_FIELD_SIZE.x    : self.pos.x = -0.5*self.size.x + game.settings.GAME_FIELD_SIZE.x
-        if self.center.y    <= 0                             : self.pos.y = -0.5*self.size.y
-        elif self.center.y  >= game.settings.GAME_FIELD_SIZE.y    : self.pos.y = -0.5*self.size.y + game.settings.GAME_FIELD_SIZE.y
+        if self.center.x    <= 0                              : self.pos.x = -0.5*self.size.x
+        elif self.center.x  >= game.settings.GAME_FIELD_SIZE.x: self.pos.x = -0.5*self.size.x + game.settings.GAME_FIELD_SIZE.x
+        if self.center.y    <= 0                              : self.pos.y = -0.5*self.size.y
+        elif self.center.y  >= game.settings.GAME_FIELD_SIZE.y: self.pos.y = -0.5*self.size.y + game.settings.GAME_FIELD_SIZE.y
     
 game = Game()
