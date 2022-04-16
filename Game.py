@@ -1,10 +1,6 @@
-from pygame import time as t
-from pygame import image as i
-from pygame import display as d
-from pygame import event as e
-from pygame import init
+from math import sqrt
+from pygame import *
 from pygame import locals as l
-from pygame.math import Vector2 as Vec
 
 from Bindings import binds
 from Setup import Setup
@@ -15,98 +11,128 @@ init()
 class Game:
     class Keyboard:
         def __init__(self) -> None:
+            print("Initializing Keyboard")
             self.state = dict()
             for bind in binds.binds:
                 self.state[bind] = False
-
-        def handle_held_keys(self) -> None:  # for continuous actions, checked every frame.
-            direction = (self.keyboard.state[binds.left],
-                         self.keyboard.state[binds.right],
-                         self.keyboard.state[binds.up],
-                         self.keyboard.state[binds.down])
-            self.cam.vel = Vec(
-                    self.keyboard.state[binds.right] - self.keyboard.state[binds.left],
-                    self.keyboard.state[binds.down] - self.keyboard.state[binds.up]
-            )
+    class Camera:
+        pass
 
     def __init__(self) -> None:
+        print("Initializing Game")
         self.keyboard = self.Keyboard()
-        self.cam = self.Camera()
         self.settings = Setup()
-        self.clock = t.Clock()
-        self.screen = d.set_mode(self.settings.GAME_FIELD_SIZE, l.RESIZABLE)
-        self.background = i.load("BG.png")
-        # self.background = i.load("Particles_V8\BG.png")
+        self.cam = self.Camera()
+        self.clock = time.Clock()
+        self.screen = display.set_mode(self.settings.GAME_FIELD_SIZE, l.RESIZABLE)
+        # self.background =image.load("BG.png")
+        self.background = image.load("Particles_V8\BG.png")
+        self.scaled_background = self.background  #to be scaled later 
         self.running = True
     
-    def handle_all_events(self) -> None:
-        for event in e.get():
-            match event.type:
+    def handle_all_events(self) -> int:
+        """
+        Sorts through all events in the queue and handles their respective actions.
+
+        Returns:
+            int: Elapsed input-processing time in milliseconds (ms).
+        """
+        start_time = time.get_ticks()
+        for recieved_event in event.get():
+            match recieved_event.type:
                 case l.QUIT:
                     exit()
                 case l.MOUSEWHEEL:
-                    match event.y:  # value is 1 for wheelup, -1 for wheeldown
+                    match recieved_event.y:  
+                        # recieved_event.y value is 1 for wheelup, -1 for wheeldown
                         case binds.mouse.wheelup if self.running:
-                            self.cam.pos += self.cam.size * 0.5 * (1. - self.cam.zoom_factor)  # center zooming action
-                            self.cam.size *= self.cam.zoom_factor  # ? zoom camera out (?)
+                            self.cam.inflate_ip(-10, -10)
+                            print("Zoom in")
                         case binds.mouse.wheeldown if self.running:
-                            self.cam.pos += self.cam.size * 0.5 * (
-                                    1. - (self.cam.zoom_factor**-1))  # center zooming action
-                            self.cam.size /= self.cam.zoom_factor  # ? zoom camera in (?)
+                            self.cam.inflate_ip(10, 10)
+                            print("Zoom out")
                 case l.KEYDOWN:
-                    self.keyboard.state[event.key] = True  # update keystate
-                    match event.key:  # for actions that execute once per keypress
+                    # Update keystate:
+                    self.keyboard.state[recieved_event.key] = True
+                      
+                    # For actions that execute once per keypress:
+                    match recieved_event.key: 
                         case binds.pause:
                             self.running = not self.running
                             print("Unpaused" if self.running else "Paused")
                         case binds.quit:
                             quit()
-                
-                case l.KEYUP:
-                    self.keyboard.state[event.key] = False
-                case l.VIDEORESIZE:
-                    pass  # self.settings.GAME_FIELD_SIZE = Vec(event.w, event.h)
+                case l.KEYUP:  
+                    # Remove no longer held keys from keyboard.state
+                    self.keyboard.state[recieved_event.key] = False
                 case l.WINDOWRESIZED | l.WINDOWSIZECHANGED:
-                    self.settings.GAME_FIELD_SIZE = Vec(event.x, event.y)
-                case l.MOUSEBUTTONDOWN:
-                    pass
-                case l.MOUSEBUTTONUP:
-                    pass
-                case l.MOUSEMOTION:
-                    pass
-                case l.WINDOWFOCUSLOST | l.WINDOWMINIMIZED:
-                    self.running = False
-                case l.WINDOWEXPOSED | l.WINDOWENTER | l.WINDOWLEAVE | l.WINDOWMOVED:
-                    pass
-                case l.TEXTINPUT:
-                    pass  # TODO add command console (revealed to me in a dream)
-                case l.ACTIVEEVENT:
-                    pass
-                case _:
-                    print("Uncaught Event: ", event)  # e.event_name(event.type))
+                    self.settings.GAME_FIELD_SIZE = math.Vector2(recieved_event.x, recieved_event.y)
+                # case l.VIDEORESIZE:
+                #     pass  # self.settings.GAME_FIELD_SIZE = math.Vector2(event.w, event.h)
+                # case l.MOUSEBUTTONDOWN:
+                #     pass
+                # case l.MOUSEBUTTONUP:
+                #     pass
+                # case l.MOUSEMOTION:
+                #     pass
+                # case l.WINDOWFOCUSLOST | l.WINDOWMINIMIZED:
+                #     self.running = False
+                # case l.WINDOWEXPOSED | l.WINDOWENTER | l.WINDOWLEAVE | l.WINDOWMOVED:
+                #     pass
+                # case l.TEXTINPUT:
+                #     pass  # TODO add command console (revealed to me in a dream)
+                # case l.ACTIVEEVENT:
+                #     pass
+                # case l.WINDOWEXPOSED:
+                #     pass
+                # case _:
+                    print("Uncaught Event: ", recieved_event)  # event.event_name(event.type))
+        return (time.get_ticks() - start_time)
+    def handle_held_keys(self) -> None:  # for continuous actions, checked every frame.
+        self.cam.vel = self.cam.max_vel * math.Vector2(
+                self.keyboard.state[binds.right] - self.keyboard.state[binds.left],
+                self.keyboard.state[binds.down] - self.keyboard.state[binds.up]
+        )
+    def show_background(self) -> int:
+        """
+        Scales the background image, then applies it to the screen (with corresponding corrections).
+        
+        Returns:
+            int: Elapsed background transformation time in milliseconds (ms).
+        """
+        self.scaled_background = transform.scale(self.background, (self.settings.VIEWPORT_SIZE//1)*self.cam.relative_size_fraction)
+        self.screen.blit(self.scaled_background, ((0, 0) - Vector2(self.cam.topleft)) * self.cam.relative_size_fraction,)
+
     
-    
-    class Camera:
+    class Camera(Rect):
         def __init__(self) -> None:
-            self.pos, self.vel = Vec(0, 0), Vec(0, 0)
-            self.size = Vec(500, 500)
-            self.center = self.pos + self.size * 0.5
+            Rect.__init__(self, (0, 0) , (500, 500))
+            print("Initializing Camera")
+            self.vel =math.Vector2(0, 0)
+            # self.topleft,  , 
+            # self.size = 
+            # self.center = self.topleft + self.size * 0.5
             self.max_vel = 150
-            self.zoom_factor = 1.05
+            self.zoom_factor = 1.1
+            self.relative_size_fraction = 1.
         
         def constrain(self) -> None:
-            self.center = self.pos + self.size * 0.5
-            if self.center.x <= 0:
-                self.pos.x = -0.5 * self.size.x
-            elif self.center.x >= game.settings.GAME_FIELD_SIZE.x:
-                self.pos.x = -0.5 * self.size.x + game.settings.GAME_FIELD_SIZE.x
-            if self.center.y <= 0:
-                self.pos.y = -0.5 * self.size.y
-            elif self.center.y >= game.settings.GAME_FIELD_SIZE.y:
-                self.pos.y = -0.5 * self.size.y + game.settings.GAME_FIELD_SIZE.y
-        
+            self.clamp_ip(Rect(
+                -self.width,
+                -self.height,
+                game.settings.VIEWPORT_SIZE.x + 2*self.width,
+                game.settings.VIEWPORT_SIZE.y + 2*self.height
+                ))
+        def update(self) -> None:
+            # self.center = Vector2(self.topleft) + Vector2(self.size) * 0.5
+            self.relative_size_fraction = sqrt(
+                math.Vector2.magnitude_squared(game.settings.GAME_FIELD_SIZE)
+                / math.Vector2.magnitude_squared(Vector2(self.size))
+            )
+            
         def move(self) -> None:
-            self.pos += self.vel * game.clock.get_time() * 0.001
+            self.move_ip(self.vel * game.clock.get_time() * 0.001)
+            self.update()
             self.constrain()
 
 
