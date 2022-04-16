@@ -1,28 +1,33 @@
-#import math
-#import random
-#from sys import exit
-#import time
+# import math
+# import random
+# from sys import exit
+# import time
 
-#import pygame as p  # TODO refactor imports ^_^
+# import pygame as p  # TODO refactor imports ^_^
 import pygame.draw as draw
 import pygame.display as display
 import pygame.font as f
-import pygame.time as t
 import pygame.locals as l
-#import pygame.event as e
-#from pygame.math import Vector2 as Vec
+# import pygame.event as e
+# from pygame.math import Vector2 as Vec
 
 
 import Colors
 from Game import game
-#todo use dead time between frames to calculate next frame (unbind framerate from simulation accuracy)
-my_clock = t.Clock()
+
+# todo use dead time between frames to calculate next frame (unbind framerate from simulation accuracy)
 
 
-screen = display.set_mode(game.settings.GAME_FIELD_SIZE, l.RESIZABLE)                
-
+# ?for calculation of cam movement in first 2 frames(?):
+# game.clock.tick(game.settings.FPS)
+# game.clock.tick(game.settings.FPS)
 while 1:
-    game.cam.handle_all_events()
+    game.handle_all_events()
+    game.handle_inputs()
     display.flip()
-    my_clock.tick_busy_loop(game.settings.FPS)
-
+    game.cam.move()
+    match game.settings.precise:
+        case True:
+            game.clock.tick_busy_loop(game.settings.FPS)
+        case False:
+            game.clock.tick	(game.settings.FPS)

@@ -2,7 +2,7 @@ import pygame
 import pygame.locals as l
 import pygame.event as e
 from sys import exit
-pygame.init
+pygame.init()
 pygame.display.set_mode((500, 500))
 while 1:
     for event in e.get():
