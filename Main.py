@@ -4,10 +4,11 @@
 # import time
 
 # import pygame as p  # TODO refactor imports ^_^
-import pygame.draw as draw
+from pygame import Color
+
 import pygame.display as display
 import pygame.font as f
-import pygame.locals as l
+# import pygame.locals as l
 # import pygame.event as e
 # from pygame.math import Vector2 as Vec
 
@@ -21,16 +22,23 @@ from Colors import BLACK
 # ?for calculation of cam movement in first 2 frames(?):
 # game.clock.tick(game.settings.FPS)
 # game.clock.tick(game.settings.FPS)
+f.init()
+
+
 while 1:
-    game.screen.fill(BLACK)
+    # game.screen.fill(BLACK)
     input_time = game.handle_all_events()
-    game.handle_held_keys()
-    game.cam.move()
-    game.show_background()
-    display.flip()
     
-    match game.settings.precise:
-        case True:
-            game.clock.tick_busy_loop(game.settings.FPS)
-        case False:
-            game.clock.tick	(game.settings.FPS)
+    if game.running:
+        game.cam.move()
+        background_time = game.show_background()
+    else:
+        game.screen.fill(BLACK)
+    game.render_texts()
+    display.flip()
+    # print(f"inputs time: {input_time}")
+    print(f"Bckgrnd time: {background_time}")
+    # print(pygame.display.Info())
+    
+    if game.settings.precise:   game.clock.tick_busy_loop(game.settings.FPS)
+    else:                       game.clock.tick(game.settings.FPS)
