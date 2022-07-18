@@ -4,17 +4,18 @@
 # import time
 
 # import pygame as p  # TODO refactor imports ^_^
-from pygame import Color
+# from pygame import Color
 
 import pygame.display as display
 import pygame.font as f
 # import pygame.locals as l
 # import pygame.event as e
 # from pygame.math import Vector2 as Vec
+import pygame.draw
 
 
 from Game import game
-from Colors import BLACK
+from Colors import *
 
 # todo use dead time between frames to calculate next frame (unbind framerate from simulation accuracy)
 
@@ -33,7 +34,8 @@ while 1:
         game.cam.move()
         background_time = game.show_background()
     else:
-        game.screen.fill(BLACK)
+        game.screen.fill(WHITE)
+        pygame.draw.circle(game.screen, RED, (240, 239), 50)
     game.render_texts()
     display.flip()
     # print(f"inputs time: {input_time}")

@@ -121,7 +121,7 @@ class Game:
                 # print("no velocity") 
             # print(f"corrected velocity = {self.cam.base_vel/self.cam.relative_size_fraction}    relative size = {self.cam.relative_size_fraction}")
         
-    def show_background(self) -> int:
+    def show_background(self, slow = False) -> int:
         """
         Scales the background image, then applies it to the screen (with corresponding corrections).
         
@@ -130,12 +130,15 @@ class Game:
         """
         start_time = time.get_ticks()
         # if Vector2.magnitude(Vector2(self.cam.size)) <= Vector2.magnitude(self.settings.VIEWPORT_SIZE):
-            
         cropped_background = self.background.subsurface(Rect(self.cam).clip(self.game_field_rect))
-        # transform.scale(cropped_background, self.settings.VIEWPORT_SIZE, self.screen)
-        cropped_background = transform.scale(cropped_background, self.settings.VIEWPORT_SIZE)
-        self.screen.blit(cropped_background, (0,0))
+        if slow:
+            cropped_background = transform.scale(cropped_background, self.settings.VIEWPORT_SIZE)
+            self.screen.blit(cropped_background, (0,0))
+        else:
+            transform.scale(cropped_background, self.settings.VIEWPORT_SIZE, self.screen)
+            
         return (time.get_ticks() - start_time)
+    
     def render_texts(self) -> None:
         frames_per_second = self.text_size1.render(
             f"FPS: {game.clock.get_fps():.1f}",
